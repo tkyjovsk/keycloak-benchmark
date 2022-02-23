@@ -7,7 +7,7 @@ import io.gatling.core.structure.ChainBuilder
 import io.gatling.http.Predef._
 import keycloak.Utils
 import keycloak.Utils.randomUUID
-import keycloak.scenario.KeycloakScenarioBuilder.{ADMIN_ENDPOINT, CODE_PATTERN, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, UI_HEADERS, downCounterAboveZero}
+import keycloak.scenario.KeycloakScenarioBuilder.{ADMIN_ENDPOINT, CODE_PATTERN, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TOKEN_ENDPOINT_2, UI_HEADERS, downCounterAboveZero}
 import keycloak.scenario._private.AdminConsoleScenarioBuilder.DATE_FMT
 import org.keycloak.benchmark.Config
 
@@ -22,9 +22,11 @@ import scala.util.Random
 object KeycloakScenarioBuilder {
 
   val BASE_URL = "${keycloakServer}/realms/${realm}"
+  val BASE_URL_2 = "${keycloakServer2}/realms/${realm}"
   val LOGIN_ENDPOINT = BASE_URL + "/protocol/openid-connect/auth"
   val LOGOUT_ENDPOINT = BASE_URL + "/protocol/openid-connect/logout"
   val TOKEN_ENDPOINT = BASE_URL + "/protocol/openid-connect/token"
+  val TOKEN_ENDPOINT_2 = BASE_URL_2 + "/protocol/openid-connect/token"
   val ADMIN_ENDPOINT = "${keycloakServer}/admin/realms/${realm}"
   val CODE_PATTERN = "code="
 
@@ -59,7 +61,11 @@ class KeycloakScenarioBuilder {
 
   var chainBuilder = exec(s => {
 
-    val serverUrl = Config.serverUrisList.iterator().next()
+    val serverIndex = Config.randomServerIndex
+    val server2Index = Config.nextServerIndexAfter(serverIndex)
+    val serverUrl = Config.serverUrisList.get(serverIndex)
+    val server2Url = Config.serverUrisList.get(server2Index)
+
     val realmIndex = String.valueOf(Random.nextInt(Config.numOfRealms))
     val clientIndex = String.valueOf(Random.nextInt(Config.numClientsPerRealm))
     val userIndex = String.valueOf(Random.nextInt(Config.numUsersPerRealm))
@@ -99,7 +105,9 @@ class KeycloakScenarioBuilder {
       clientSecret = Config.clientSecret;
     }
 
-    s.setAll("keycloakServer" -> serverUrl,
+    s.setAll(
+      "keycloakServer" -> serverUrl,
+      "keycloakServer2" -> server2Url,
       "state" -> randomUUID(),
       "wrongPasswordCount" -> new AtomicInteger(Config.badLoginCount),
       "realm" -> realmName,
@@ -127,7 +135,7 @@ class KeycloakScenarioBuilder {
 
   def openLoginPage(pauseAfter: Boolean): KeycloakScenarioBuilder = {
     chainBuilder = chainBuilder
-      .exec(http("Browser to Log In Endpoint")
+      .exec(http("Browser to Log In Endpoint - " + LOGIN_ENDPOINT)
         .get(LOGIN_ENDPOINT)
         .headers(UI_HEADERS)
         .queryParam("login", "true")
@@ -196,9 +204,13 @@ class KeycloakScenarioBuilder {
   }
 
   def exchangeCode(): KeycloakScenarioBuilder = {
+    return exchangeCode(false)
+  }
+
+  def exchangeCode(server2: Boolean): KeycloakScenarioBuilder = {
     chainBuilder = chainBuilder
-      .exec(http("Exchange Code")
-        .post(TOKEN_ENDPOINT)
+      .exec(http("Exchange Code - " + (if (server2) TOKEN_ENDPOINT_2 else TOKEN_ENDPOINT) )
+        .post( if (server2) TOKEN_ENDPOINT_2 else TOKEN_ENDPOINT )
         .headers(UI_HEADERS)
         .formParam("grant_type", "authorization_code")
         .formParam("client_id", "${clientId}")
@@ -250,7 +262,7 @@ class KeycloakScenarioBuilder {
   }
 
   private def logout(): ChainBuilder = {
-    exec(http("Browser logout")
+    exec(http("Browser logout - " + LOGOUT_ENDPOINT)
       .get(LOGOUT_ENDPOINT)
       .headers(UI_HEADERS)
       .queryParam("redirect_uri", "${redirectUri}")

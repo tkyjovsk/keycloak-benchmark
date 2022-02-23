@@ -2,7 +2,9 @@ package org.keycloak.benchmark;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -130,6 +132,12 @@ public class Config {
     public static final int maxMeanReponseTime = Integer.getInteger("sla-mean-response-time", 300);
     public static SimpleDateFormat SIMPLE_TIME = new SimpleDateFormat("HH:mm:ss");
 
+    
+    /**
+     * 
+     */
+    public static final boolean exchangeCodeOnDifferentServer = Boolean.getBoolean("exchange-code-on-different-server");
+    
     // user-crawl-scenario properties
     /**
      * The amount of users to be requested for each page. This number is only used in the user crawl scenario.
@@ -155,7 +163,17 @@ public class Config {
         // initialize serverUrisList and serverUrisIterator
         serverUrisList = Arrays.asList(serverUris.split(" "));
     }
+    
+    private static final Random random = new Random();
 
+    public static int randomServerIndex() {
+        return random.nextInt(serverUrisList.size());
+    }
+    
+    public static int nextServerIndexAfter(int serverIndex) {
+        return (serverIndex + 1) % serverUrisList.size();
+    }
+    
     public static String toStringPopulationConfig() {
         return String.format(
                 "  realms: %s\n"
