@@ -272,11 +272,45 @@ class KeycloakScenarioBuilder {
         .formParam("grant_type", "client_credentials")
         .formParam("client_id", "${clientId}")
         .formParam("client_secret", "${clientSecret}")
-        .check(status.is(200)))
+        .check(
+          status.is(200),
+          jsonPath("$..refresh_token").find.saveAs("token")
+        ))
       .exitHereIfFailed
     this
   }
 
+  def refreshToken(): KeycloakScenarioBuilder = {
+    chainBuilder = chainBuilder
+      .exec(http("Refresh Token")
+        .post(TOKEN_ENDPOINT)
+        .formParam("grant_type", "refresh_token")
+        .formParam("client_id", "${clientId}")
+        .formParam("client_secret", "${clientSecret}")
+        .formParam("refresh_token", "${token}")
+        .check(
+          status.is(200),
+          jsonPath("$..refresh_token").find.saveAs("token")
+        ))
+      .exitHereIfFailed
+    this
+  }
+
+  def clientLogout(): KeycloakScenarioBuilder = {
+    userThinkPause()
+    chainBuilder = chainBuilder
+      .randomSwitch(
+        Config.logoutPercentage -> 
+          exec(http("Client logout")
+            .get(LOGOUT_ENDPOINT)
+            .headers(UI_HEADERS)
+            .formParam("client_id", "${clientId}")
+            .formParam("client_secret", "${clientSecret}")
+            .formParam("refresh_token", "${token}")
+            .check(status.is(200)))
+      )
+    this
+  }
 
   def serviceAccountToken(): KeycloakScenarioBuilder = {
     chainBuilder = chainBuilder
