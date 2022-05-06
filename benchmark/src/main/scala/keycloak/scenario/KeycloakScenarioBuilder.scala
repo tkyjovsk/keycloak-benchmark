@@ -205,7 +205,10 @@ class KeycloakScenarioBuilder {
         .formParam("client_secret", "${clientSecret}")
         .formParam("redirect_uri", "${redirectUri}")
         .formParam("code", "${code}")
-        .check(status.is(200)))
+        .check(
+          status.is(200),
+          jsonPath("$..refresh_token").find.saveAs("token")
+        ))
       .exitHereIfFailed
     this
   }
