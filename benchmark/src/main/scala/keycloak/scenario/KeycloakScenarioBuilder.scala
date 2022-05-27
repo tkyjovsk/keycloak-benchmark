@@ -149,6 +149,19 @@ class KeycloakScenarioBuilder {
     this
   }
 
+  def openHomePage(pauseAfter: Boolean): KeycloakScenarioBuilder = {
+    chainBuilder = chainBuilder
+      .exec(http("Open Home Page ${keycloakServer}")
+        .get("${keycloakServer}/")
+        .headers(UI_HEADERS)
+        .check(status.is(200)))
+      .exitHereIfFailed
+    if (pauseAfter) {
+      userThinkPause()
+    }
+    this
+  }
+
   def browserPostsWrongCredentials(): KeycloakScenarioBuilder = {
     chainBuilder = chainBuilder
       .asLongAs(s => downCounterAboveZero(s, "wrongPasswordCount")) {
