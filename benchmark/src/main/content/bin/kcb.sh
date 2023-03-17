@@ -22,6 +22,7 @@ fi
 
 GREP="grep"
 DIRNAME=$(dirname "$RESOLVED_NAME")
+RUN_PARAMETERS_FILE="$DIRNAME/../results/run-$(date -uIs).properties"
 
 JAVA_OPTS="-server"
 JAVA_OPTS="${JAVA_OPTS} -Xmx1G -XX:+HeapDumpOnOutOfMemoryError"
@@ -61,6 +62,7 @@ do
           else
             SERVER_OPTS+=("$1")
           fi
+          echo "${1:2}" >> "${RUN_PARAMETERS_FILE}"
           ;;
     esac
     shift
@@ -75,6 +77,9 @@ if [ "$DEBUG_MODE" = "true" ]; then
         echo "Debug already enabled in JAVA_OPTS, ignoring --debug argument"
     fi
 fi
+echo "JAVA_OPTS=${JAVA_OPTS}" >> "${RUN_PARAMETERS_FILE}"
+echo "SCENARIO=$SCENARIO" >> "${RUN_PARAMETERS_FILE}"
+sort -o "${RUN_PARAMETERS_FILE}"{,}
 
 CLASSPATH_OPTS="$DIRNAME/../lib/*"
 
