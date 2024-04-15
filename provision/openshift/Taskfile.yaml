@@ -217,11 +217,18 @@ tasks:
       - common:env
       - openshift-env
       - infinispan-remote
+    env:
+      CATALOG_SOURCE_NAMESPACE: '{{ default "openshift-marketplace" .KC_OPERATOR_CATALOG_SOURCE_NS }}'
+      CATALOG_SOURCE: '{{ default "community-operators" .KC_OPERATOR_CATALOG_SOURCE }}'
+      PRODUCT: '{{ default "keycloak-operator" .KC_OPERATOR_NAME }}'
+      CHANNEL: '{{ .KC_OPERATOR_CHANNEL }}'
+      VERSION: '{{ .KC_OPERATOR_VERSION }}'
     cmds:
       - kubectl create namespace {{.KC_NAMESPACE_PREFIX}}keycloak || true
-      - kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/keycloaks.k8s.keycloak.org-v1.yml
-      - kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml
-      - kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/kubernetes.yml || (kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak delete deployment/keycloak-operator && kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/kubernetes.yml)
+      - INSTALL_NAMESPACE="{{.KC_NAMESPACE_PREFIX}}keycloak" ./olm.sh
+#      - kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/keycloaks.k8s.keycloak.org-v1.yml
+#      - kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml
+#      - kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/kubernetes.yml || (kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak delete deployment/keycloak-operator && kubectl -n {{.KC_NAMESPACE_PREFIX}}keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/{{.KC_OPERATOR_TAG}}/kubernetes/kubernetes.yml)
       - >
         bash -c '
         if [ "{{.KC_CONTAINER_IMAGE}}" != "" ]; then
