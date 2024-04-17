@@ -18,7 +18,7 @@ set_environment_variables () {
   EVENTS_COUNT="100"
   SESSIONS_COUNT="100"
   if ( minikube version &>/dev/null ); then
-    KEYCLOAK_URI="https://keycloak-keycloak.$(minikube ip || echo 'unknown').nip.io/realms/master/dataset"
+    DATASET_PROVIDER_URI="https://keycloak-keycloak.$(minikube ip || echo 'unknown').nip.io/realms/master/dataset"
   fi
   REALM_PREFIX="realm"
   STATUS_TIMEOUT="120"
@@ -59,7 +59,7 @@ set_environment_variables () {
         REALM_PREFIX=$OPTARG
         ;;
       l)
-        KEYCLOAK_URI=$OPTARG
+        DATASET_PROVIDER_URI=$OPTARG
         ;;
       t)
         STATUS_TIMEOUT=$OPTARG
@@ -78,110 +78,43 @@ set_environment_variables () {
   done
 }
 
-create_clients () {
-  echo "Creating $1 client/s in realm $2"
-  execute_command "create-clients?count=$1&realm-name=$2&task-timeout=$3&threads-count=$4"
+help () {
+  echo "Dataset import to the local minikube Keycloak application - usage:"
+  echo "1) create realms with clients, users - run -a (action) with or without other arguments: -a create-realms -r 10 -c 100 -u 100 -l 'https://keycloak.url.com'"
+  echo "2) create clients in specific realm: -a create-clients -c 100 -n realm-0 -l 'https://keycloak.url.com'"
+  echo "3) create users in specific realm: -a create-users -u 100 -n realm-0 -l 'https://keycloak.url.com'"
+  echo "4) create events in specific realm: -a create-events -e 100 -n realm-0 -l 'https://keycloak.url.com'"
+  echo "5) create offline sessions in specific realm: -a create-offline-sessions -o 100 -n realm-0' -l 'https://keycloak.url.com'"
+  echo "6) delete specific realms with prefix -a delete-realms -p realm -l 'https://keycloak.url.com'"
+  echo "7) dataset provider status -a status 'https://keycloak.url.com'"
+  echo "8) dataset provider status check of last completed job -a status-completed -t 10 -l 'https://keycloak.url.com'"
+  echo "9) dataset provider clear status of last completed job -a clear-status-completed -l 'https://keycloak.url.com'"
+  echo "10) dataset import script usage -a help"
 }
 
-create_users () {
-  echo "Creating $1 user/s in realm $2"
-  execute_command "create-users?count=$1&realm-name=$2"
-}
-
-create_events () {
-  echo "Creating $1 event/s in realm $2"
-  execute_command "create-events?count=$1&realm-name=$2"
-}
-
-create_offline_sessions () {
-  echo "Creating $1 offline sessions in realm $2"
-  execute_command "create-offline-sessions?count=$1&realm-name=$2"
-}
-
-delete_realms () {
-  echo "Deleting realm/s with prefix $1"
-  execute_command "remove-realms?remove-all=true&realm-prefix=$1"
-}
-
-dataset_provider_status () {
-  echo "Dataset provider status"
-  execute_command "status"
-}
-
-dataset_provider_status_completed () {
-  echo "Dataset provider status of the last completed task"
-  t=0
-  RESPONSE=""
-  until [[ $(echo $RESPONSE | grep '"success":"true"') ]]
-  do
-    if [[ $t -gt $1 ]]
-     then
-      echo "Status Polling timeout ${1}s exceeded ";
-      echo $RESPONSE
-      dataset_provider_status
-      exit 1
-      break
-    fi
-    RESPONSE=$(execute_command "status-completed")
-    sleep 1 && ((t=t+1))
-    echo "Polling...${t}s"
-  done
-  echo $RESPONSE
-}
-
-dataset_provider_clear_status_completed () {
-  echo "Dataset provider clears the status of the last completed task"
-  execute_command "status-completed" "-X DELETE"
-}
-
-execute_command () {
-  if [[ ! $1 =~ "status" ]]
-  then
-    check_dataset_status
-  fi
-  curl -ks $2 "${KEYCLOAK_URI}/$1"
-  echo ""
-}
-
-check_dataset_status () {
-  for i in {0..10}
-  do
-    if [[ $(dataset_provider_status | grep "No task in progress") ]]
-    then
-      break
-    elif [[ $(dataset_provider_status | grep "Realm does not exist") ]]
-    then
+dataset_provider () {
+  if [[ ! $1 =~ "status" ]]; then
+    for i in {0..10}; do
+      status=$(dataset_provider status)
+      if [[ $(echo "$status" | grep "No task in progress") ]]; then
+        break
+      elif [[ $(echo "$status" | grep "Realm does not exist") ]]; then
         echo "Realm master does not exist, please rebuild your Keycloak application from scratch."
         exit 1
-    elif [[ $(dataset_provider_status | grep "unknown_error") ]]
-    then
+      elif [[ $(echo "$status" | grep "unknown_error") ]]; then
         echo "Unknown error occurred, please check your Keycloak instance for more info."
         exit 1
-    else
-      if [[ $i -eq 10 ]]
-      then
+      elif [[ $i -eq 10 ]]; then
         echo "Keycloak dataset provider is busy, please try it again later."
         exit 1
       else
         echo "Waiting..."
         sleep 3s
       fi
-    fi
-  done
-}
-
-help () {
-  echo "Dataset import to the local minikube Keycloak application - usage:"
-  echo "1) create realm/s with clients, users and password hash algorithm & iterations - run -a (action) with or without other arguments: -a create-realms -r 10 -g argon2 -i 5 -c 100 -u 100 -l 'https://keycloak.url.com'"
-  echo "2) create clients in specific realm: -a create-clients -c 100 -n realm-0 -l 'https://keycloak.url.com'"
-  echo "3) create users in specific realm: -a create-users -u 100 -n realm-0 -l 'https://keycloak.url.com'"
-  echo "4) create events in specific realm: -a create-events -e 100 -n realm-0 -l 'https://keycloak.url.com'"
-  echo "5) create offline sessions in specific realm: -a create-offline-sessions -o 100 -n realm-0' -l 'https://keycloak.url.com'"
-  echo "6) delete specific realm/s with prefix -a delete-realms -p realm -l 'https://keycloak.url.com'"
-  echo "7) dataset provider status -a status 'https://keycloak.url.com'"
-  echo "8) dataset provider status check of last completed job -a status-completed -t 10 -l 'https://keycloak.url.com'"
-  echo "9) dataset provider clear status of last completed job -a clear-status-completed -l 'https://keycloak.url.com'"
-  echo "10) dataset import script usage -a help"
+    done
+  fi
+  curl -ks $2 "${DATASET_PROVIDER_URI}/$1"
+  echo ""
 }
 
 main () {
@@ -193,39 +126,60 @@ main () {
       if [ -z "$HASH_ALGORITHM" ];  then HA_PARAM=""; HASH_ALGORITHM="default";  else HA_PARAM="&password-hash-algorithm=$HASH_ALGORITHM"; fi
       if [ -z "$HASH_ITERATIONS" ]; then HI_PARAM=""; HASH_ITERATIONS="default"; else HI_PARAM="&password-hash-iterations=$HASH_ITERATIONS"; fi
       echo "Creating $REALM_COUNT realms with $CLIENTS_COUNT clients and $USERS_COUNT users with $HASH_ITERATIONS password-hashing iterations using the $HASH_ALGORITHM algorithm."
-      execute_command "create-realms?count=$REALM_COUNT&clients-per-realm=$CLIENTS_COUNT&users-per-realm=$USERS_COUNT$HI_PARAM$HA_PARAM"
+      dataset_provider "create-realms?count=$REALM_COUNT&clients-per-realm=$CLIENTS_COUNT&users-per-realm=$USERS_COUNT$HI_PARAM$HA_PARAM"
       exit 0
       ;;
     create-clients)
-      create_clients $CLIENTS_COUNT $REALM_NAME $CREATE_TIMEOUT $THREADS
+      echo "Creating $CLIENTS_COUNT clients in realm $REALM_NAME"
+      dataset_provider "create-clients?count=$CLIENTS_COUNT&realm-name=$REALM_NAME"
       exit 0
       ;;
     create-users)
-      create_users $USERS_COUNT $REALM_NAME
+      echo "Creating $USERS_COUNT users in realm $REALM_NAME"
+      dataset_provider "create-users?count=$USERS_COUNT&realm-name=$REALM_NAME"
       exit 0
       ;;
     create-events)
-      create_events $EVENTS_COUNT $REALM_NAME
+      echo "Creating $EVENTS_COUNT events in realm $REALM_NAME"
+      dataset_provider "create-events?count=$EVENTS_COUNT&realm-name=$REALM_NAME"
       exit 0
       ;;
     create-offline-sessions)
-      create_offline_sessions $SESSIONS_COUNT $REALM_NAME
+      echo "Creating $SESSIONS_COUNT offline sessions in realm $REALM_NAME"
+      dataset_provider "create-offline-sessions?count=$SESSIONS_COUNT&realm-name=$REALM_NAME"
       exit 0
       ;;
     delete-realms)
-      delete_realms $REALM_PREFIX
+      echo "Deleting realms with prefix $REALM_PREFIX"
+      dataset_provider "remove-realms?remove-all=true&realm-prefix=$REALM_PREFIX"
       exit 0
       ;;
     status)
-      dataset_provider_status
+      dataset_provider status
       exit 0
       ;;
     status-completed)
-      dataset_provider_status_completed $STATUS_TIMEOUT
+      echo "Dataset provider status of the last completed task"
+      t=0
+      RESPONSE=""
+      until [[ $(echo $RESPONSE | grep '"success":"true"') ]]; do
+        if [[ $t -gt $STATUS_TIMEOUT ]]; then
+          echo "Status Polling timeout ${STATUS_TIMEOUT}s exceeded ";
+          echo $RESPONSE
+          dataset_provider status
+          exit 1
+          break
+        fi
+        RESPONSE=$(dataset_provider "status-completed")
+        sleep 1 && ((t=t+1))
+        echo "Polling...${t}s"
+      done
+      echo $RESPONSE
       exit 0
       ;;
     clear-status-completed)
-      dataset_provider_clear_status_completed
+      echo "Dataset provider clears the status of the last completed task"
+      dataset_provider "status-completed" "-X DELETE"
       exit 0
       ;;
     help)
