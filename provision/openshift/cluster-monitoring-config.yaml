@@ -9,3 +9,4 @@ data:
       enabled: true
       enableAlertmanagerConfig: true
       logLevel: debug
+    enableUserWorkload: true
