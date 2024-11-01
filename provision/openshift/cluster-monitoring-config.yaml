@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: user-workload-monitoring-config
-  namespace: openshift-user-workload-monitoring
+  namespace: openshift-monitoring
 data:
   config.yaml: |
     alertmanager:
