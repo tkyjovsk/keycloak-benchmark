@@ -13,7 +13,6 @@ spec:
     requests:
       storage: 100Mi
   {{ if eq .Values.environment "openshift" }}
-  storageClassName: efs-sc
   {{ else }}
   storageClassName: standard
   {{ end }}
