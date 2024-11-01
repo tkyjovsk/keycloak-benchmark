@@ -66,10 +66,8 @@ spec:
 {{ if .Values.otel }}
       - opentelemetry
 {{- end }}
-{{- if .Values.externalInfinispan }}
     disabled:
       - persistent-user-sessions
-{{- end }}
 
 {{- if .Values.infinispan.customConfig }}
   # tag::keycloak-ispn[]
