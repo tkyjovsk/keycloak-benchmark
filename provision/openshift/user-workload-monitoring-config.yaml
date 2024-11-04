@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-workload-monitoring-config
+  namespace: openshift-user-workload-monitoring
+data:
+  config.yaml: |
+    alertmanager:
+      enabled: true
+      enableAlertmanagerConfig: true
+      logLevel: debug
+    prometheus:
+      retention: 14d
+      retentionSize: 10GB

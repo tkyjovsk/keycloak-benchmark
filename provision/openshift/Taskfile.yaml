@@ -299,11 +299,13 @@ tasks:
       - .task/remote-store-username
       - .task/remote-store-password
 
-  user-alert-routing:
+  user-workload-monitoring:
     deps:
       - common:split
       - common:env
     cmds:
       - kubectl apply -f cluster-monitoring-config.yaml
+      - kubectl apply -f user-workload-monitoring-config.yaml
     sources:
       - cluster-monitoring-config.yaml
+      - user-workload-monitoring-config.yaml
