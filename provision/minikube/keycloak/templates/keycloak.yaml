@@ -227,6 +227,9 @@ spec:
 {{- if not (eq (int .Values.metaspaceMaxMB) 256) }}
                   -XX:MaxMetaspaceSize={{ .Values.metaspaceMaxMB }}m
 {{- end }}
+{{- if .Values.logGC }}
+                  -Xlog:gc
+{{- end }}
 {{- if .Values.jvmDebug }}
                   -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8787
 {{- end }}
