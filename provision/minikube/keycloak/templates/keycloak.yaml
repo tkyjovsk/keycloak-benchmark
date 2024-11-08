@@ -237,7 +237,7 @@ spec:
                   -XX:MaxGCPauseMillis={{ .Values.maxGCPauseMillis }}
 {{- end }}
 {{- if .Values.logGC }}
-                  -Xlog:gc
+                  -Xlog:gc -XX:+PrintGCDetails -XX:+PrintAdaptiveSizePolicy
 {{- end }}
 {{- if .Values.jvmDebug }}
                   -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8787
