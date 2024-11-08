@@ -233,6 +233,9 @@ spec:
 {{- if not (eq (int .Values.heapMaxMB) 512) }}
                   -XX:MaxHeapSize={{ .Values.heapMaxMB }}m
 {{- end }}
+{{- if not (eq (int .Values.maxGCPauseMillis) 200) }}
+                  -XX:MaxGCPauseMillis={{ .Values.maxGCPauseMillis }}
+{{- end }}
 {{- if .Values.logGC }}
                   -Xlog:gc
 {{- end }}

@@ -214,6 +214,7 @@ tasks:
         --set memoryLimitsMB={{ .KC_MEMORY_LIMITS_MB }}
         --set heapInitMB={{ .KC_HEAP_INIT_MB }}
         --set heapMaxMB={{ .KC_HEAP_MAX_MB }}
+        --set maxGCPauseMillis={{ .KC_MAX_GC_PAUSE_MILLIS }}
         --set logGC={{ .KC_LOG_GC }}
         --set metaspaceInitMB={{ .KC_METASPACE_INIT_MB }}
         --set metaspaceMaxMB={{ .KC_METASPACE_MAX_MB }}

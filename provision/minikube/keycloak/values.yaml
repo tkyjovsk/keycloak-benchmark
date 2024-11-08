@@ -32,6 +32,7 @@ heapInitMB: 64
 heapMaxMB: 512
 metaspaceInitMB: 96
 metaspaceMaxMB: 256
+maxGCPauseMillis: 200
 nodePortsEnabled: true
 portOffset: 0
 keycloakAdminPassword: admin
