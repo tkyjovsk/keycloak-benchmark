@@ -37,7 +37,7 @@ nodePortsEnabled: true
 portOffset: 0
 keycloakAdminPassword: admin
 disableIngressStickySession: false
-logGC: false
+jvmLog: ''
 jvmDebug: true
 predefinedAdmin: true
 persistentSessions: false

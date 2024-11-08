@@ -21,7 +21,7 @@ vars:
   KC_HEAP_INIT_MB: '{{default "64" .KC_HEAP_INIT_MB}}'
   KC_HEAP_MAX_MB: '{{default "512" .KC_HEAP_MAX_MB}}'
   KC_MAX_GC_PAUSE_MILLIS: '{{default "200" .KC_MAX_GC_PAUSE_MILLIS}}'
-  KC_LOG_GC: '{{default "false" .KC_LOG_GC}}'
+  KC_JVM_LOG: '{{default "" .KC_JVM_LOG}}'
   KC_CUSTOM_INFINISPAN_CONFIG: '{{default "true" .KC_CUSTOM_INFINISPAN_CONFIG}}'
   KC_CUSTOM_INFINISPAN_CONFIG_FILE: '{{default "config/kcb-infinispan-cache-config.xml" .KC_CUSTOM_INFINISPAN_CONFIG_FILE}}'
   KC_REMOTE_STORE: '{{default "false" .KC_REMOTE_STORE}}'

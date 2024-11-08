@@ -236,8 +236,8 @@ spec:
 {{- if not (eq (int .Values.maxGCPauseMillis) 200) }}
                   -XX:MaxGCPauseMillis={{ .Values.maxGCPauseMillis }}
 {{- end }}
-{{- if .Values.logGC }}
-                  -Xlog:gc -XX:+PrintGCDetails -XX:+PrintAdaptiveSizePolicy
+{{- if .Values.jvmLog }}
+                  -Xlog:{{ .Values.jvmLog }}
 {{- end }}
 {{- if .Values.jvmDebug }}
                   -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8787
