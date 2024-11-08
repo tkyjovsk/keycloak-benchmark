@@ -261,6 +261,7 @@ tasks:
         --set heapMaxMB={{ .KC_HEAP_MAX_MB }}
         --set metaspaceInitMB={{ .KC_METASPACE_INIT_MB }}
         --set metaspaceMaxMB={{ .KC_METASPACE_MAX_MB }}
+        --set jvmAdditionalArgs="{{ .KC_JVM_ADDITIONAL_ARGS }}"
         --set infinispan.jgroupsTls={{ .KC_JGROUPS_TLS }}
         --set infinispan.customConfig={{ .KC_CUSTOM_INFINISPAN_CONFIG }}
         --set infinispan.configFile={{ .KC_CUSTOM_INFINISPAN_CONFIG_FILE }}
