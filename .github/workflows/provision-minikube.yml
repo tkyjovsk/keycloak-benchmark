@@ -1,21 +1,7 @@
 name: minikube CI
 
 on:
-  schedule:
-    # run weekly to ensure to catch build being broken against upstream
-    - cron: "0 7 * * 1"
-  push:
-    # dependabot will create both branches and pull request
-    # only run on pull requests to avoid running twice and creating a release draft
-    branches-ignore:
-      - 'dependabot/**'
-    paths:
-      - 'provision/minikube/**'
-      - '.github/workflows/provision-minikube.yml'
-  pull_request:
-    paths:
-      - 'provision/minikube/**'
-      - '.github/workflows/provision-minikube.yml'
+  workflow_dispatch:
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.

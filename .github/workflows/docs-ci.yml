@@ -1,11 +1,7 @@
 name: Testing Documentation Site
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/docs-ci.yml'
-      - 'antora/**'
-      - 'doc/**'
+  workflow_dispatch:
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.

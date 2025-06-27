@@ -1,27 +1,7 @@
 name: Java CI with Maven
 
 on:
-  schedule:
-    # run weekly to ensure to catch build being broken against upstream
-    - cron: "0 7 * * 1"
-  push:
-    # dependabot will create both branches and pull request
-    # only run on pull requests to avoid running twice and creating a release draft
-    branches-ignore:
-      - 'dependabot/**'
-    paths-ignore:
-      - 'provision/**'
-      - 'antora/**'
-      - 'doc/**'
-      - '.github/workflows/*.yml'
-      - '!.github/workflows/build.yml'
-  pull_request:
-    paths-ignore:
-      - 'provision/**'
-      - 'antora/**'
-      - 'doc/**'
-      - '.github/workflows/*.yml'
-      - '!.github/workflows/build.yml'
+  workflow_dispatch:
 
 concurrency:
   # Only run once for the latest commit per ref and cancel other (previous) runs.

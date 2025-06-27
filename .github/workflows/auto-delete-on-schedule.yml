@@ -2,8 +2,6 @@ name: ROSA Scheduled Delete
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 21 * * *' # Runs every day at 9 PM UTC.
 
 jobs:
   accelerator-delete:

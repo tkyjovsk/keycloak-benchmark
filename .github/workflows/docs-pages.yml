@@ -7,13 +7,6 @@ on:
       - "Aggregate Benchmark results"
     types:
       - completed
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/docs-pages.yml'
-      - 'antora/**'
-      - 'doc/**'
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.

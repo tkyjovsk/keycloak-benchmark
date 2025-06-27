@@ -1,16 +1,7 @@
 name: Snapshot Release
 
 on:
-  push:
-    branches:
-      - main
-      - '*-release'
-    paths-ignore:
-      - 'provision/**'
-      - 'antora/**'
-      - 'doc/**'
-      - '.github/workflows/*.yml'
-      - '!.github/workflows/snapshot.yml'
+  workflow_dispatch:
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.
